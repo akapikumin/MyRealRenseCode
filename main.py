@@ -2,14 +2,25 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs
 
+#幅と高さ
+W = 640
+H = 480
+#画像の中心の座標
+CENTER = [int(H / 2), int(W / 2)]
+
 # Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
-config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+config.enable_stream(rs.stream.depth, W, H, rs.format.z16, 30)
+config.enable_stream(rs.stream.color, W, H, rs.format.bgr8, 30)
 
 # Start streaming
-pipeline.start(config)
+profile = pipeline.start(config)
+
+#Depthスケール取得
+#距離[m] = depth * depth_scale
+depth_sensor = profile.get_device().first_depth_sensor()
+depth_scale = depth_sensor.get_depth_scale()
 
 try:
     while True:
@@ -25,6 +36,10 @@ try:
         depth_image = np.asanyarray(depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
 
+        #中心座標の距離を取得
+        distance = depth_image[CENTER[0]][CENTER[1]] * depth_scale
+        print(str(distance) + 'm')
+
         # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
@@ -38,6 +53,6 @@ try:
             break
 
 finally:
-
     # Stop streaming
     pipeline.stop()
+    cv2.destroyAllWindows()
