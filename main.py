@@ -32,10 +32,13 @@ def get_distancce(depth_image, depth_scale, CENTER):
 
     height = 150
     width = 70
-    depth_center_image = depth_image[int(CENTER[0]-height/2):int(CENTER[0]+height/2), int(CENTER[1]-width/2):int(CENTER[1]+width/2)]
+    depth_center_image = np.array(depth_image[int(CENTER[0]-height/2):int(CENTER[0]+height/2), int(CENTER[1]-width/2):int(CENTER[1]+width/2)], dtype=np.int32)
+    #depth_cent_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_center_image, alpha=0.03), cv2.COLORMAP_JET)
+    #depth_cent_colormap = cv2.resize(depth_cent_colormap, (140, 300))
+    #cv2.imshow('cent', depth_cent_colormap)
+    #print(depth_center_image, depth, type(depth))
     depth_center_image = depth_center_image - depth
-    #print(depth_center_image, depth)
-    avedis = np.average(depth_center_image) * depth_scale
+    avedis = depth_center_image.mean() * depth_scale
     ran = [height, width]
 
     return cedis, avedis, ran
@@ -55,7 +58,7 @@ while True:
 
     # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
     depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-
+    depth_colormap = cv2.rectangle(depth_colormap, (int(cent[1]-rang[1]/2), int(cent[0]-rang[0]/2)), (int(cent[1]+rang[1]/2), int(cent[0]+rang[0]/2)), (0, 0, 0))
     # Stack both images horizontally
     images = np.hstack((color_image, depth_colormap))
 
