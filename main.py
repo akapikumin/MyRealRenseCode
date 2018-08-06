@@ -10,7 +10,8 @@ def Start_stream():
     #画像の中心の座標
     CENTER = [int(H / 2), int(W / 2)]
     #カメラ上の大きさ算出 S = k(M/r)の比例定数kは画角と画像サイズで決まる
-    k = np.array([W / (2 * math.tan(math.radians(34.7))), H / (2 * math.tan(math.radians(21.25)))], dtype=np.float32)
+    c = [8.0, 0.5]
+    k = np.array([W / (2 * math.tan(math.radians(34.7-c[0]))), H / (2 * math.tan(math.radians(21.25-c[1])))], dtype=np.float32)
 
     # Configure depth and color streams
     pipeline = rs.pipeline()
@@ -64,7 +65,7 @@ while True:
     depth_colormap = cv2.rectangle(depth_colormap, (int(cent[1]-rang[0]/2), int(cent[0]-rang[1]/2)), (int(cent[1]+rang[0]/2), int(cent[0]+rang[1]/2)), (0, 0, 0))
     # Stack both images horizontally
     images = np.hstack((color_image, depth_colormap))
-
+    images = cv2.flip(images, 1)
     # Show images
     cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
     cv2.imshow('RealSense', images)
