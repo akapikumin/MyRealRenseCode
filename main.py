@@ -36,14 +36,33 @@ def get_distancce(depth_image, depth_scale, CENTER, k, V):
     if cedis == 0:
         return cedis, 'none', [0, 0]
 
+    #画像中央の深度を横方向で１階微分する。
+    cediff = float(depth) - float(depth_image[CENTER[0]][CENTER[1]+1])
+
+    #深度の横方向に対する傾きによって、V[0]の値を少し変更する
+    V[0] = V[0] * math.cos(math.atan(abs(cediff)))
     ran = k * V / cedis
+    # if cediff != 0:
+    #     #高さの最小値に範囲の高さを合わせる→一番遠い場所で高さの計算をする
+    #     ran = np.array([0, 0], dtype = np.float32)
+    #     ran[0] = k[0] * V[0] / cedis
+    #     i = 0
+    #     maxdis = depth_image[CENTER[0]][int(CENTER[1] + (cediff / abs(cediff)) * (ran[0] / 2 - 5))]
+    #     while maxdis==0:
+    #         maxdis = depth_image[CENTER[0]][int(CENTER[1] + (cediff / abs(cediff)) * (ran[0] / 2 - (5 + i)))]
+    #     ran[1] = k[1] * V[1] / maxdis
+    # else:
+    #     ran = k * V / cedis
     #範囲内の深度を横方向で２階微分する。平面ならば０になるはずである。
     depth_center_image_diff = np.diff(np.array(depth_image[int(CENTER[0]-ran[1]/2):int(CENTER[0]+ran[1]/2), int(CENTER[1]-ran[0]/2):int(CENTER[1]+ran[0]/2)], dtype=np.int32), n=2)
     #depth_cent_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_center_image, alpha=0.03), cv2.COLORMAP_JET)
     #depth_cent_colormap = cv2.resize(depth_cent_colormap, (140, 300))
     #cv2.imshow('cent', depth_cent_colormap)
     #print(depth_center_image, depth, type(depth))
-    ave_diff = depth_center_image_diff.mean()
+    if depth_center_image_diff.shape[1] == 0:
+        ave_diff = 'none'
+    else:
+        ave_diff = depth_center_image_diff.mean()
 
     return cedis, ave_diff, ran
 
